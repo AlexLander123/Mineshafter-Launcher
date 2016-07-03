@@ -1,5 +1,7 @@
 package info.mineshafter.intercept;
 
+import info.mineshafter.util.Streams;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -10,8 +12,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import info.mineshafter.util.Streams;
 
 public class TextureHandler implements Handler {
 	private Map<String, URL> skinLookup = new ConcurrentHashMap<String, URL>();
@@ -31,15 +31,11 @@ public class TextureHandler implements Handler {
 
 	private TextureHandler() {}
 
-	public boolean handle(URL req) {
-		if(!textureHost.equalsIgnoreCase(req.getHost())) {
-			return false;
-		}
+	public boolean canHandle(URL req) {
+		if (!textureHost.equalsIgnoreCase(req.getHost())) { return false; }
 
 		Matcher m = textureUrl.matcher(req.getPath());
-		if(!m.matches()) {
-			return false;
-		}
+		if (!m.matches()) { return false; }
 
 		String hash = m.group(1);
 		char type = hash.charAt(60);
@@ -55,7 +51,7 @@ public class TextureHandler implements Handler {
 
 	public Response handle(Request req) {
 		try {
-			Matcher m = textureUrl.matcher(req.path);
+			Matcher m = textureUrl.matcher(req.getPath());
 			m.matches();
 			String hash = m.group(1);
 			String id = hash.substring(0, 32);
@@ -67,14 +63,13 @@ public class TextureHandler implements Handler {
 			} else if (type == '1') { // Cape
 				skinUrl = capeLookup.get(id);
 			}
+
 			//System.out.println("TextureHandler.handle type: " + type);
 
 			HttpURLConnection conn = (HttpURLConnection) skinUrl.openConnection();
 			byte[] data = Streams.toByteArray(conn.getInputStream());
 
-			Response r = new Response(data);
-
-			return r;
+			return new Response(data);
 		} catch (IOException e) {
 			e.printStackTrace();
 

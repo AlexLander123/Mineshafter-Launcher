@@ -1,10 +1,10 @@
 package info.mineshafter.intercept;
 
-import java.net.URL;
-
 import info.mineshafter.Util;
+import info.mineshafter.datasources.AutomaticProfileAuthority;
 import info.mineshafter.models.Profile;
-import info.mineshafter.storage.Profiles;
+
+import java.net.URL;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
@@ -13,7 +13,7 @@ import com.eclipsesource.json.JsonValue;
 public class YggdrasilImpersonator implements Handler {
 	private static String HOST = "authserver.mojang.com";
 
-	private static Profiles profiles = Profiles.getInstance();
+	private static AutomaticProfileAuthority profiles = AutomaticProfileAuthority.getInstance();
 
 	private static YggdrasilImpersonator instance;
 
@@ -27,7 +27,7 @@ public class YggdrasilImpersonator implements Handler {
 		return instance;
 	}
 
-	public boolean handle(URL url) {
+	public boolean canHandle(URL url) {
 		return url.getHost().equalsIgnoreCase(HOST);
 	}
 
@@ -36,7 +36,7 @@ public class YggdrasilImpersonator implements Handler {
 
 		JsonObject yggreq = JsonObject.readFrom(new String(req.body));
 
-		String path = req.path.toLowerCase();
+		String path = req.getPath().toLowerCase();
 
 		if (path.equals("/authenticate")) {
 			r = authenticate(yggreq);
@@ -61,7 +61,7 @@ public class YggdrasilImpersonator implements Handler {
 
 		String accessToken = Util.getMd5(username + password + Long.toString(System.currentTimeMillis()));
 
-		Profile p = profiles.getProfileByName(username);
+		Profile p = profiles.searchProfile(username);
 
 		JsonObject user = new JsonObject();
 		user.set("id", p.getId());

@@ -1,4 +1,4 @@
-package info.mineshafter.datasources;
+package info.mineshafter.crypto;
 
 import info.mineshafter.util.Resources;
 
@@ -43,7 +43,6 @@ public class Signer {
 			signature = Signature.getInstance("SHA1withRSA");
 			signature.initSign(key);
 			signature.update(data);
-
 			return signature.sign();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
